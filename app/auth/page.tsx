@@ -1,17 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Lock,
-  User,
-  Key,
-  ArrowRight,
-  ShieldCheck,
-  Briefcase,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { handleInternalAuth } from "./actions";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { SubmitButton } from "../components/submitbutton";
+import Password from "../components/password";
+import RolePick from "../components/rolepick";
+import InviteCode from "../components/InviteCode";
+import UserName from "../components/UserName";
+import Logo from "../components/Logo";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -33,130 +31,69 @@ export default function AuthPage() {
       if (result.error) {
         alert(result.error);
       } else {
-        if (isLogin && result.success) {
-          if (result.role === "CUSTOMER_SERVICE") {
-            router.push("/dashboard/customer-service");
-          } else if (result.role === "DISPATCHER") {
-            router.push("/dashboard/dispatcher");
-          }
+        if (isLogin && result.success && result.role && result.username) {
+          router.push(
+            `/dashboard/orders?role=${result.role}&username=${result.username}`,
+          );
         } else {
-          alert("注册成功，请登录");
+          alert("注册成功，请使用新账号登录");
           setIsLogin(true);
         }
       }
     } catch (err) {
-      alert("网络连接失败，请检查您的网络");
+      console.error(err);
+      alert("网络连接失败，请检查数据库或环境变量配置");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center px-6 py-12 font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center px-4 py-12 font-sans">
+      {/* 顶部 Logo */}
+      <Logo />
+
+      {/* 登录/注册表单 */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-10 px-8 shadow-2xl rounded-[2.5rem] border border-slate-100">
           <form action={handleSubmit} className="space-y-5">
             {/* 用户名 */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider ml-1 mb-2">
-                用户名
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-                  <User size={18} />
-                </div>
-                <input
-                  name="username"
-                  required
-                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                  placeholder="输入用户名"
-                />
-              </div>
-            </div>
+            <UserName />
 
             {/* 密码 */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider ml-1 mb-2">
-                密码
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-                  <Lock size={18} />
-                </div>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                  placeholder="输入密码"
-                />
-              </div>
-            </div>
+            <Password />
 
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {!isLogin && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
                   className="space-y-5 overflow-hidden"
                 >
-                  {/* 角色 */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider ml-1 mb-2">
-                      所属岗位
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-                        <Briefcase size={18} />
-                      </div>
-
-                      <select
-                        name="role"
-                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
-                      >
-                        <option value="DISPATCHER">配货员 (Dispatcher)</option>
-                        <option value="CUSTOMER_SERVICE">
-                          客服 (Customer Service)
-                        </option>
-                      </select>
-                    </div>
-                  </div>
+                  {/* 角色选择 */}
+                  <RolePick />
 
                   {/* 邀请码 */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider ml-1 mb-2">
-                      邀请码
-                    </label>
-
-                    <input
-                      name="inviteCode"
-                      required
-                      className="block w-full px-4 py-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                      placeholder="输入内部邀请码"
-                    />
-                  </div>
+                  <InviteCode isLogin={isLogin} />
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* 提交按钮 */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-6 py-4 rounded-2xl bg-indigo-600 text-white font-bold disabled:bg-slate-300"
-            >
-              {loading ? "提交中..." : isLogin ? "登录" : "注册"}
-            </button>
+            <SubmitButton isLogin={isLogin} />
           </form>
 
           {/* 切换登录注册 */}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="w-full mt-6 text-sm text-indigo-600 font-semibold text-center"
-          >
-            {isLogin ? "申请注册" : "返回登录"}
-          </button>
+          <div className="mt-8 text-center border-t border-slate-100 pt-6">
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              {isLogin ? "新员工入职？申请账号" : "已有权限账号？立即登录"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

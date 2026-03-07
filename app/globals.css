@@ -11,6 +11,31 @@
   --font-sans: var(--font-noto);
 }
 
+/* globals.css */
+@keyframes ring {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: rotate(-10deg);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: rotate(10deg);
+  }
+}
+.animate-ring {
+  animation: ring 2s ease infinite;
+  transform-origin: top;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
