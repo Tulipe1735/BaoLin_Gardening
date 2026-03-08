@@ -12,6 +12,9 @@ const notoSans = Noto_Sans_SC({
 export const metadata = {
   title: "宝林园艺管理系统",
   description: "Internal Management System for Baolin Gardening",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
