@@ -122,18 +122,58 @@ export async function executeOrder(
 // ============================
 export async function updateOrderImages(
   id: string,
-  imageUrls: string[],
+  newImageUrl: string, // 只传这一张
   role?: string,
   username?: string,
 ) {
   if (role !== "DISPATCHER") throw new Error("Unauthorized");
 
+  // 在数据库层面使用 push (Prisma 支持数组追加)
+  const order = await db.order.update({
+    where: { id },
+    data: {
+      images: {
+        push: newImageUrl, // 仅追加这一张，不传旧数据
+      },
+    },
+  });
+
+  // 发送通知逻辑保持不变...
+  await sendNotification("CUSTOMER_SERVICE", `...`);
+
+  revalidatePath(`/dashboard/orders/${id}`);
+  return { success: true };
+}
+
+// app/dashboard/actions.ts
+
+export async function deleteSingleImage(
+  id: string,
+  index: number, // 只传要删除哪个
+  role?: string,
+  username?: string,
+) {
+  if (role !== "DISPATCHER") throw new Error("Unauthorized");
+
+  // 1. 先查出当前所有图片
+  const order = await db.order.findUnique({
+    where: { id },
+    select: { images: true },
+  });
+
+  if (!order) throw new Error("订单不存在");
+
+  // 2. 过滤掉该索引的图片
+  const updatedImages = order.images.filter((_, i) => i !== index);
+
+  // 3. 更新回数据库
   await db.order.update({
     where: { id },
-    data: { images: imageUrls },
+    data: { images: updatedImages },
   });
 
   revalidatePath(`/dashboard/orders/${id}`);
+  return { success: true };
 }
 
 export async function refreshAction(
@@ -168,16 +208,6 @@ export async function deleteOrder(
     if (!order) return { error: "订单不存在" };
 
     await db.order.delete({ where: { id } });
-
-    // 通知另一方
-    const target =
-      role === "CUSTOMER_SERVICE" ? "DISPATCHER" : "CUSTOMER_SERVICE";
-    const roleName = role === "CUSTOMER_SERVICE" ? "客服" : "配货员";
-
-    await sendNotification(
-      target,
-      `订单作废：${roleName} ${username || ""} 删除了订单 #${order.orderNumber}`,
-    );
 
     revalidatePath("/dashboard/orders");
     revalidatePath("/dashboard/history");

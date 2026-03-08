@@ -6,8 +6,10 @@ import {
   updateOrderImages,
   refreshAction,
   executeOrder,
+  deleteSingleImage,
 } from "@/app/dashboard/actions";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import imageCompression from "browser-image-compression";
 
 interface ImageUploadProps {
   orderId: string;
@@ -34,36 +36,55 @@ export default function ImageUpload({
     if (!file) return;
 
     setLoading(true);
-    const reader = new FileReader();
 
-    reader.onloadend = async () => {
-      const base64String = reader.result as string;
-      try {
-        // 调用 action：将新图片追加到当前数组
-        await updateOrderImages(
-          orderId,
-          [...currentImages, base64String],
-          role,
-          username,
-        );
-      } catch (err) {
-        alert("上传失败，请检查网络");
-      } finally {
-        setLoading(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      // --- 压缩配置 ---
+      const options = {
+        maxSizeMB: 0.2, // 最大 200KB (极其安全的大小)
+        maxWidthOrHeight: 1280, // 最大宽度或高度 1280px (保持清晰度)
+        useWebWorker: true, // 开启多线程防止页面卡顿
+      };
+
+      // 执行压缩
+      const compressedFile = await imageCompression(file, options);
+
+      // 将压缩后的 File 转为 Base64 传给后端
+      const reader = new FileReader();
+      reader.readAsDataURL(compressedFile);
+
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        try {
+          // 调用我们之前改好的单张上传 Action
+          await updateOrderImages(orderId, base64String, role, username);
+        } catch (err) {
+          alert("图片上传失败");
+        } finally {
+          setLoading(false);
+        }
+      };
+    } catch (error) {
+      console.error("压缩失败:", error);
+      setLoading(false);
+      alert("图片处理失败，请重试");
+    }
   };
 
   // 2. 删除单张图片
+  // ImageUpload.tsx 内部
+
   const handleDeleteImage = async (index: number) => {
     if (!confirm("确定删除这张图片吗？")) return;
 
-    const updatedImages = currentImages.filter((_, i) => i !== index);
+    setLoading(true); // 建议删除时也加个 loading 状态
     try {
-      await updateOrderImages(orderId, updatedImages, role, username);
+      // 调用新的删除 Action，只传 index
+      await deleteSingleImage(orderId, index, role, username);
     } catch (err) {
+      console.error(err);
       alert("删除失败");
+    } finally {
+      setLoading(false);
     }
   };
 
