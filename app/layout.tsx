@@ -1,6 +1,7 @@
 import { Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
 import NoticeListener from "@/app/components/NotificationToast";
+import { Suspense } from "react";
 
 const notoSans = Noto_Sans_SC({
   weight: ["300", "400", "500", "700"],
@@ -31,7 +32,9 @@ export default function RootLayout({
             因为它在 RootLayout，它将出现在所有页面。
             组件内部需要使用 useSearchParams 来获取 role 以查询通知。
         */}
-        <NoticeListener />
+        <Suspense fallback={null}>
+          <NoticeListener />
+        </Suspense>
 
         {children}
       </body>

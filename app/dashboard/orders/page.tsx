@@ -4,6 +4,7 @@ import { PlusCircle, User2 } from "lucide-react";
 import DeleteButton from "@/app/components/DeleteButton";
 import HistoryButton from "@/app/components/HistoryButton";
 import NotificationBell from "@/app/components/NoticeButton";
+import { Suspense } from "react";
 
 export default async function OrdersPage({
   searchParams,
@@ -38,11 +39,15 @@ export default async function OrdersPage({
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
-            <User2 size={14} />
-            {username}
+            <User2 size={14} />\{username}
           </div>
-          <NotificationBell unreadCount={unreadCount} />
-          <HistoryButton />
+          <Suspense fallback={null}>
+            <NotificationBell unreadCount={unreadCount} />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <HistoryButton />
+          </Suspense>
           {/* 只有客服可以创建订单 */}
           {role === "CUSTOMER_SERVICE" && (
             <Link

@@ -5,6 +5,7 @@ import { ChevronLeft, Archive, Calendar, Search } from "lucide-react"; // 新增
 import ResetButton from "@/app/components/ResetButton";
 import DeleteButton from "@/app/components/DeleteButton";
 import SearchBar from "@/app/components/SearvhBar";
+import { Suspense } from "react";
 
 interface HistoryPageProps {
   searchParams: Promise<{
@@ -47,7 +48,9 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
 
       <div className="p-4 max-w-md mx-auto space-y-3">
         {/* 搜索框组件 */}
-        <SearchBar defaultValue={q} />
+        <Suspense fallback={null}>
+          <SearchBar defaultValue={q} />
+        </Suspense>
 
         {historyOrders.length === 0 && (
           <div className="text-center text-slate-400 py-20">
