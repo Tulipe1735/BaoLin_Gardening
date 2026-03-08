@@ -6,6 +6,7 @@ import ResetButton from "@/app/components/ResetButton";
 import DeleteButton from "@/app/components/DeleteButton";
 import SearchBar from "@/app/components/SearvhBar";
 import { Suspense } from "react";
+import { Order } from "@prisma/client";
 
 interface HistoryPageProps {
   searchParams: Promise<{
@@ -20,7 +21,7 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
   const params = await searchParams;
   const { role, username, q } = params;
 
-  const historyOrders = await db.order.findMany({
+  const historyOrders: Order[] = await db.order.findMany({
     where: {
       status: "EXECUTED",
       // 如果有搜索词，匹配订单号
