@@ -164,7 +164,9 @@ export async function deleteSingleImage(
   if (!order) throw new Error("订单不存在");
 
   // 2. 过滤掉该索引的图片
-  const updatedImages = order.images.filter((_: any, i: number) => i !== index);
+  const updatedImages = (order.images as string[]).filter(
+    (_, i: number) => i !== index,
+  );
 
   // 3. 更新回数据库
   await db.order.update({

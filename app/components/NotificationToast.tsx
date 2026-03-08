@@ -8,10 +8,19 @@ import {
   getLatestUnreadNotification,
 } from "@/app/dashboard/actions";
 
+// 定义通知的结构
+interface Notification {
+  id: string;
+  message: string;
+  target: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
 export default function NotificationToast() {
   const searchParams = useSearchParams();
   const [show, setShow] = useState(false);
-  const [latestUnread, setLatestUnread] = useState<any>(null);
+  const [latestUnread, setLatestUnread] = useState<Notification | null>(null);
 
   // 从 URL 自动获取身份信息
   const role = searchParams.get("role");

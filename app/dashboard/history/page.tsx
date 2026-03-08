@@ -6,7 +6,15 @@ import ResetButton from "@/app/components/ResetButton";
 import DeleteButton from "@/app/components/DeleteButton";
 import SearchBar from "@/app/components/SearvhBar";
 
-export default async function HistoryPage({ searchParams }: any) {
+interface HistoryPageProps {
+  searchParams: Promise<{
+    role?: string;
+    username?: string;
+    q?: string;
+  }>;
+}
+
+export default async function HistoryPage({ searchParams }: HistoryPageProps) {
   // 这里的 await 是 Next.js 15+ 的要求，如果是旧版本直接解构即可
   const params = await searchParams;
   const { role, username, q } = params;
