@@ -1,4 +1,4 @@
-This is a gift for my mother, 妇女节快乐！爱你老妈
+这是一份送给我母亲的礼物, 爱你老妈!
 
 ## Getting Started
 
